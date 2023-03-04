@@ -349,14 +349,14 @@ export default function Home() {
           </div>
         </div>
         <ConvictzeesCarousel
-          convictzees={convictState.dummyConvictzees}
-          title="Mint Sloths from Prison"
-        />
+          convictzees={convictState.prisonedSloth}
+          title="Mint Sloths from Prison" 
+          arrowDisable={true}        />
         <ConvictzeesCarousel
-          convictzees={convictState.dummyConvictzees}
+          convictzees={convictState.mySloth}
           title="My Sloths"
-          state="redeem"
-        />
+          state="redeem" 
+          arrowDisable={false}        />
       </div>
     </div>
   );

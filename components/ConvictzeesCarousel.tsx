@@ -1,17 +1,19 @@
 import { Button, Carousel, ConfigProvider, Select } from "antd";
 import { useRef } from "react";
-import { ConvictzeesCard } from "./ConvictzeesCard";
+import { ConvictzeesCard } from "@/components/ConvictzeesCard";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 export type Convictzee = {
   name: string;
   id: string;
   prisoned: boolean;
+  url : string;
 };
 export type ConvictzeesCarouselProps = {
   convictzees: Convictzee[];
   title: string;
   state?: string;
+  arrowDisable: boolean;
 };
 
 export function spliceIntoChunks(arr: any[], chunkSize: number) {
@@ -28,6 +30,7 @@ export const ConvictzeesCarousel = ({
   convictzees,
   title,
   state = "transfer",
+  arrowDisable,
 }: ConvictzeesCarouselProps) => {
   const slider = useRef<any>(null);
 
@@ -41,19 +44,24 @@ export const ConvictzeesCarousel = ({
               colorPrimary: "rgba(0, 0, 0, 0.6)",
             },
           }}
-        >
+        >{/*   filter Don't need
           <Button type="primary" className=" border-gray-300">
             filter
           </Button>
+          */}
         </ConfigProvider>
       </div>
       <div className="w-full flex items-center">
+        {
+        arrowDisable ? 
+        <></> :
         <Button
           className="-mr-10 z-10 text-white w-4 bg-inherit border-0 flex flex-col items-center"
           onClick={() => slider.current.prev()}
         >
           <LeftOutlined className=" text-lg" />
         </Button>
+        }
         <div className="w-full">
           <Carousel
             ref={slider}
@@ -76,12 +84,16 @@ export const ConvictzeesCarousel = ({
             ))}
           </Carousel>
         </div>
+        {
+        arrowDisable ? 
+        <></> :
         <Button
           className="-ml-10 z-10 text-white w-4 bg-inherit border-0 flex flex-col items-center"
           onClick={() => slider.current.next()}
         >
           <RightOutlined className="text-lg " />
         </Button>
+        } 
       </div>
     </>
   );
