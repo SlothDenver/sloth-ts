@@ -1,4 +1,6 @@
+import { useIsConnected } from "@/hooks/useIsConnected";
 import { useConvictzees } from "@/store/store";
+import { useWeb3React } from "@web3-react/core";
 import { Button, Popover } from "antd";
 import Router from "next/router";
 import { useState } from "react";
@@ -12,6 +14,9 @@ export const ConvictzeesCard = ({
   state: string;
 }) => {
   const [hovered, setHovered] = useState<boolean>(false);
+  const [isFuelConnected] = useIsConnected();
+  const {active} = useWeb3React();
+
   const convictzeeState = useConvictzees();
   return (
     <>
@@ -38,7 +43,7 @@ export const ConvictzeesCard = ({
               <Button
                 className="bg-[#1d1d1d80] mr-4 text-white backdrop-blur"
                 onClick={() => {
-                  convictzeeState.viewDummyConvictzee(convictzee);
+                  convictzeeState.viewDummySloth(convictzee);
                   Router.replace({
                     pathname: Router.pathname,
                     query: { state: "transfer" },
@@ -50,7 +55,7 @@ export const ConvictzeesCard = ({
               <Button
                 className="bg-[#1d1d1d80] text-white backdrop-blur"
                 onClick={() => {
-                  convictzeeState.viewDummyConvictzee(convictzee);
+                  convictzeeState.viewDummySloth(convictzee);
                   Router.replace({
                     pathname: Router.pathname,
                     query: { state: "redeem" },
@@ -60,15 +65,18 @@ export const ConvictzeesCard = ({
                 Redeem
               </Button>
             </>
-          ) : (
+          ) : (active || isFuelConnected) && (
             <Button
-              className="bg-[#1d1d1d80] text-white backdrop-blur"
+              className="bg-[#1d1d1d80] text-white backdrop-blur"            
+              disabled = {!isFuelConnected && !active}
               onClick={() => {
-                convictzeeState.viewDummyConvictzee(convictzee);
-                Router.replace({
-                  pathname: Router.pathname,
-                  query: { state: "mint" },
-                });
+                  convictzeeState.viewDummySloth(convictzee);
+                  convictzeeState.setVertical(true);
+                  convictzeeState.setBounties(convictzee)
+                  Router.replace({
+                    pathname: Router.pathname,
+                    query: { state: "mint" },
+                  });
               }}
             >
               Mint
