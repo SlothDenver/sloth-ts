@@ -8,6 +8,7 @@ export type Convictzee = {
   id: string;
   prisoned: boolean;
   url : string;
+  amount : number
 };
 export type ConvictzeesCarouselProps = {
   convictzees: Convictzee[];

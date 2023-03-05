@@ -72,7 +72,11 @@ export const ConvictzeesCard = ({
               onClick={() => {
                   convictzeeState.viewDummySloth(convictzee);
                   convictzeeState.setVertical(true);
-                  convictzeeState.setBounties(convictzee)
+                  convictzee.id == '1' ? 
+                    convictzeeState.setBounties(convictzee, convictzeeState.sloth_1Ms) :
+                  convictzee.id == '2' ? 
+                    convictzeeState.setBounties(convictzee, convictzeeState.sloth_10Ks) :
+                    convictzeeState.setBounties(convictzee, convictzeeState.sloth_1Ks)
                   Router.replace({
                     pathname: Router.pathname,
                     query: { state: "mint" },

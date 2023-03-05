@@ -13,9 +13,24 @@ import {
   LeftOutlined,
 } from "@ant-design/icons";
 import ConnectButton from "@/components/ConnectButton";
+import { useIsConnected } from "@/hooks/useIsConnected";
+import { useWeb3React } from "@web3-react/core";
+import { fuelMinting, polygonMinting } from "@/helper/mint";
+import { fuelRedeem, FuelRetreiveMyToken, polygonRedeem, RetreiveMyToken } from "@/helper/redeem";
+
+import { useFuel } from "@/hooks/useFuel";
+import { Asset } from "@/types";
+import { currentAddresses } from "@/constants";
+import { fuelTransferWithOutToken, fuelTransferWithToken } from "@/helper/fuelTransfer";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const [isFuelConnected] = useIsConnected();
+  const {active, account} = useWeb3React();
+  const [fuel] = useFuel();
+
+  
   const convictState = useConvictzees();
   const router = useRouter();
   return (
@@ -23,7 +38,7 @@ export default function Home() {
       <div className="container relative px-4 py-24 z-20">
         <Modal
           footer
-          width={400}
+          width={convictState.vertical ? "max-content" : 400}
           className="text-white"
           open={convictState.modal}
           onCancel={() => {
@@ -39,7 +54,10 @@ export default function Home() {
           <Button
             type="ghost"
             className=" text-gray-400"
-            onClick={() => Router.back()}
+            onClick={() => {
+              convictState.resetModal();
+              Router.replace({ pathname: Router.pathname });
+            }}
           >
             <LeftOutlined />
           </Button>
@@ -106,12 +124,14 @@ export default function Home() {
                 ></Input>
                 <Button
                   className="w-max text-sm bg-black h-8 my-4 text-white"
-                  onClick={() =>
+                  onClick={async() =>{
+                    //await fuelTransferWithToken(fuel, convictState.transferAmount, convictState.receiverAddress)
+                    
                     router.replace({
                       pathname: router.pathname,
                       query: { state: "transferConfirm" },
                     })
-                  }
+                  }}
                 >
                   TRANSFER
                 </Button>
@@ -193,12 +213,13 @@ export default function Home() {
                 ></Input>
                 <Button
                   className="w-24 min-w-max text-sm bg-black h-8 my-4 text-white"
-                  onClick={() =>
+                  onClick={async() =>{
+                    //await fuelTransferWithOutToken(fuel, convictState.transferAmount, convictState.receiverAddress)
                     router.replace({
                       pathname: router.pathname,
                       query: { state: "transferConfirm" },
                     })
-                  }
+                  }}
                 >
                   TRANSFER
                 </Button>
@@ -212,7 +233,14 @@ export default function Home() {
               >
                 <div className=" py-4 font-semibold">
                   Are you sure you want to throw this sloth back into prison and
-                  take the bounty of $1,000,000?
+                  take the bounty of $
+                    {
+                  convictState.convictzee.amount==1000000 ? 
+                  "1,000,000" : 
+                  convictState.convictzee.amount==10000 ? 
+                  "10,000" : 
+                  "1,000"
+                    }? 
                 </div>
                 <Button
                   className="w-24 min-w-max text-sm bg-black h-8 my-4 text-white"
@@ -241,7 +269,34 @@ export default function Home() {
 
                 <Button
                   className="w-24 min-w-max text-sm bg-black h-8 my-4 text-white"
-                  onClick={() => {
+                  onClick={async () => {
+                    let isRedeemed = false
+
+                    if(isFuelConnected){
+                      const tokenId = await FuelRetreiveMyToken(fuel)
+                      isRedeemed = await fuelRedeem(fuel, tokenId)
+                    }
+                    else {
+                      console.log(account)
+                      const tokenId = await RetreiveMyToken(account)
+                      isRedeemed = await polygonRedeem(tokenId)
+                    }
+                    if(! isRedeemed) {
+                      convictState.resetModal();
+                      router.replace({ pathname: router.pathname });
+                      return
+                    }
+
+                    const NFTredeemed =convictState.mySloth.pop()
+                    if(NFTredeemed.amount==1000000) {
+                      convictState.sloth_1Ms.push(NFTredeemed)
+                    }
+                    else if (NFTredeemed.amount==10000) {
+                      convictState.sloth_10Ks.push(NFTredeemed)
+                    }
+                    else {
+                      convictState.sloth_1Ks.push(NFTredeemed)
+                    }
                     convictState.resetModal();
                     router.replace({ pathname: router.pathname });
                   }}
@@ -252,47 +307,92 @@ export default function Home() {
             )
           ) : router.query.state === "mint" ? (
             convictState.convictzee && (
-              <TransferModal
+              <TransferModal.Vertical
                 title={"Mint"}
-                convictzee={convictState.convictzee}
+                convictzee= {
+                  convictState.convictzee.id=="1" ? 
+                  convictState.sloth_1Ms[convictState.bounties] : 
+                  convictState.convictzee.id=="2" ? 
+                  convictState.sloth_10Ks[convictState.bounties] : 
+                  convictState.sloth_1Ks[convictState.bounties]
+                }
               >
-                <div className=" py-4 font-semibold">
-                  Are you sure you want to mint this sloth?
-                </div>
-                <Button
-                  className="w-24 min-w-max text-sm bg-black h-8 my-4 text-white"
-                  onClick={() =>
-                    router.replace({
-                      pathname: router.pathname,
-                      query: { state: "mintConfirm" },
-                    })
-                  }
-                >
-                  Yes
-                </Button>
-              </TransferModal>
+                <div className=" w-[302px] px-8 h-[200px] flex flex-col justify-between items-center">
+                  <div className=" pb-4 font-semibold">
+                    Are you sure you want to mint this stable NFT? The Sloth
+                    will have a bounty of $
+                    {convictState.convictzee.id=="1" ? 
+                    "1,000,000" : 
+                    convictState.convictzee.id=="2" ? 
+                    "10,000" : 
+                    "1,000"
+                    }? 
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <Button
+                      className="w-full text-sm bg-black h-8 mb-2 text-white"
+                      onClick={
+                        async () =>  {
+                          const mintNFT = convictState.convictzee?.id=="1" ? 
+                            convictState.sloth_1Ms : 
+                            convictState.convictzee?.id=="2" ? 
+                            convictState.sloth_10Ks : 
+                            convictState.sloth_1Ks
+                          const idx = convictState.bounties
+                          const asset : Asset = 
+                          {
+                            assetId: currentAddresses.FUEL_USDT_CONTRACT_ADDR,
+                            name: mintNFT[idx].name,
+                            symbol: 'Sloth',
+                            imageUrl:mintNFT[idx].url,
+                            isCustom: true,
+                          }
+                        const isMinted = 
+                        isFuelConnected ? 
+                        await fuelMinting(fuel, asset) :
+                        await polygonMinting()
+                        // del sloth
+                        if(!isMinted) {
+                          convictState.resetModal();
+                          router.replace({
+                            pathname: router.pathname,
+                          });
+                          return
+                        }
+                        convictState.mySloth.push(mintNFT[idx]) 
+                        
+                        const newNFTs = mintNFT.filter((convictzee) => convictzee.id != mintNFT[idx].id)
+                        //console.log(newNFTs)
+                        convictState.convictzee?.id=="1" ? 
+                            convictState.sloth_1Ms = newNFTs : 
+                            convictState.convictzee?.id=="2" ? 
+                            convictState.sloth_10Ks = newNFTs : 
+                            convictState.sloth_1Ks = newNFTs
+                        
+                        convictState.resetModal();
+                        router.replace({
+                          pathname: router.pathname,
+                        });
+                      }}
+                    >
+                      YES, Jailbreak the Sloth!
+                    </Button>
+                    <Button
+                      className="w-full text-sm bg-black h-8 my-2 text-white"
+                      onClick={() => {
+                        convictState.resetModal();
+                        router.replace({
+                          pathname: router.pathname,
+                        });
+                      }}
+                    >
+                      NO, Keep him in jail!
+                    </Button>
+                  </div>
+                </div> 
+              </TransferModal.Vertical>
             )
-          ) : router.query.state === "mintConfirm" ? (
-            convictState.convictzee && (
-              <TransferModal
-                title={"Mint"}
-                convictzee={convictState.convictzee}
-              >
-                <div className=" py-4 font-semibold">Minted!</div>
-                <Button
-                  className="w-24 min-w-max text-sm bg-black h-8 my-4 text-white"
-                  onClick={() => {
-                    convictState.resetModal();
-                    router.replace({
-                      pathname: router.pathname,
-                    });
-                  }}
-                >
-                  OK
-                </Button>
-              </TransferModal>
-            )
-          ) : (
+          )  : (
             <></>
           )}
           {router.query.state === ""}
@@ -308,11 +408,11 @@ export default function Home() {
             <div>
               <div className=" text-5xl font-bold my-4">Sloths on the Run</div>
               <div className="mb-10">
-                Meet the sloths that you've never seen before – these
+                Meet the sloths that you&apos;ve never seen before – these
                 slow-moving creatures have turned into adrenaline-pumping,
                 lightning-fast escape artists after committing some serious
                 crimes in the web3 universe. <br />
-                Once you've minted your stable NFT of the convict sloth, he is
+                Once you&apos;ve minted your stable NFT of the convict sloth, he is
                 yours to control.
                 <br />
                 Redeem your money by throwing him back into prison for the
@@ -350,13 +450,29 @@ export default function Home() {
         </div>
         <ConvictzeesCarousel
           convictzees={convictState.prisonedSloth}
-          title="Mint Sloths from Prison" 
-          arrowDisable={true}        />
+          title="Mint Sloths from Prison"
+          arrowDisable = {true}
+        />
+        {
+        isFuelConnected && convictState.mySloth.length != 0 || active && convictState.mySloth.length != 0 ? 
         <ConvictzeesCarousel
           convictzees={convictState.mySloth}
           title="My Sloths"
-          state="redeem" 
-          arrowDisable={false}        />
+          state="redeem"
+          arrowDisable = {false}
+        />:
+        <div className="justify-between my-16">
+          <div className="text-2xl font-bold my-8">
+            My Sloths
+            </div>
+          <div className="bg-[#191919] w-[98%] h-[300px] py-20 text-2xl font-bold item-center text-center">
+            No Sloths Yet!
+            <div className="text-sm">
+              Your sNFT will appear here!
+            </div>
+          </div>
+        </div>
+        }
       </div>
     </div>
   );

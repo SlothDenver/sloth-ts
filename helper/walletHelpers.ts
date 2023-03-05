@@ -1,6 +1,6 @@
 import getChain from "@/constants"
 
-const chain = getChain(parseInt("1"))
+const chain = getChain(parseInt(process.env.NEXT_PUBLIC_CHAIN_ID))
 
 async function addTokenToMetamask(
   address: string,
@@ -22,28 +22,28 @@ async function addTokenToMetamask(
   })
 }
 
-async function switchChains() {
+async function switchChains(chainID : number) {
   try {
     let provider = (window as any).ethereum;
     await provider.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: chain.chainId }],
+      params: [{ chainId: getChain(chainID).chainId }],
     })
   } catch (error) {
     if ((error as any).code === 4902 || (error as any).code === -32603) {
-      await addChain();
+      await addChain(chainID);
     }
   }
 }
 
-async function addChain() {
+async function addChain(chainID) {
   try { 
     let provider = (window as any).ethereum;
     await provider.request({
       method: "wallet_addEthereumChain",
       params: [
         {
-          ...chain,
+          ...getChain(chainID),
         },
       ],
     })

@@ -21,6 +21,7 @@ import { useLoading } from "@/hooks/useLoading";
 import { useIsConnected } from "@/hooks/useIsConnected";
 import { useFuel } from "@/hooks/useFuel";
 import { getErrorMessage } from "@/helper/getErrorMessage";
+import { switchChains } from "@/helper/walletHelpers";
 
 function ConnectButton() {
   //
@@ -74,11 +75,14 @@ function ConnectButton() {
     deactivate();
   }
   const handleEthConnect = async () => {
+    await switchChains(80001)
     await activate(injected, (error) => {
       getErrorMessage(error)
     });
   };
-
+  const handleSwitchChain = (value : number) => {
+    switchChains(value)
+  }
   const items: MenuProps["items"] = [
     {
       key: "1",
@@ -140,7 +144,13 @@ function ConnectButton() {
 
   if(active) {
     return (
-      <div className="flex md:px-2 2xl:px-4 items-center">
+      <div className="flex md:px-2 2xl:px-4 items-center ">
+         <Select 
+          onChange={handleSwitchChain}
+          className="w-36 mx-2 text-white"
+          defaultValue = {80001}
+        >
+           <Select.Option value={80001} key = {0}>
           <Image
             src="/images/connectors/metamask-fox.svg"
             width={24}
@@ -149,6 +159,30 @@ function ConnectButton() {
             alt="MetaMask"
           />
           <span className="text-white">MetaMask</span>
+          </Select.Option>
+          <Select.Option value={5001} key = {1}>
+          <Image
+            src="/images/connectors/mantle-logo.svg"
+            width={24}
+            priority
+            height={24}
+            alt="Mantle"
+          />
+          <span className="text-white">Mantle</span>
+          </Select.Option>
+          <Select.Option value={245022926} key = {2}>
+          <Image
+            src="/images/connectors/neon-logo.svg"
+            width={24}
+            priority
+            height={24}
+            alt="Neon"
+          />
+          <span className="text-white">Neon</span>
+          </Select.Option>
+        </Select>
+{//------------------------------------------------
+}
         <Select 
           className="w-36 mx-2 text-white"
           defaultValue = {0}
