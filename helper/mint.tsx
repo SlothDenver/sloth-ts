@@ -12,25 +12,39 @@ export async function polygonMinting(){
     let etherium = (window as any).ethereum;
     const provider = new ethers.providers.Web3Provider(etherium)
     console.log(etherium.selectedAddress)
-
     const Approvesigner = provider.getSigner();
-    const USDCcontract = new ethers.Contract(currentAddresses.ETH_USDC_CONTRACT_ADDR, Polygon_USDC_ABI.abi, Approvesigner);
+    let USDTcontract = ""
+    let NFTcontract = ""
+    if (etherium.networkVersion=="5001") {
+      USDTcontract = currentAddresses.MANTLE_USDC_CONTRACT_ADDR
+      NFTcontract = currentAddresses.MANTLE_NFT_CONTRACT_ADDR 
+    }
+    else if (etherium.networkVersion=="80001") {
+      USDTcontract = currentAddresses.ETH_USDC_CONTRACT_ADDR
+      NFTcontract = currentAddresses.ETH_NFT_CONTRACT_ADDR 
+    }
+    else if (etherium.networkVersion == "245022926") {
+      USDTcontract = currentAddresses.NEON_USDC_CONTRACT_ADDR
+      NFTcontract = currentAddresses.NEON_NFT_CONTRACT_ADDR 
+    }
+
+    const USDCcontract = new ethers.Contract(USDTcontract, Polygon_USDC_ABI.abi, Approvesigner);
   
     try {
-      let txn = await USDCcontract.approve(currentAddresses.ETH_NFT_CONTRACT_ADDR, 10000000000);
+      let txn = await USDCcontract.approve(NFTcontract, 10000000000);
       console.log(`[Logging] Approve Loading - ${txn.hash}`)
       await txn.wait()
       console.log(`[Logging] Approve Success - ${txn.hash}`)
     }
     catch (e) { 
-      console.log(e); 
+      console.log(e);   
       return false
     }	
   
     const Mintsigner = provider.getSigner();
-    const Stablincontract = new ethers.Contract(currentAddresses.ETH_NFT_CONTRACT_ADDR, Polygon_NFT_ABI.abi, Mintsigner);
+    const Stablincontract = new ethers.Contract(NFTcontract, Polygon_NFT_ABI.abi, Mintsigner);
     try {
-        let txn = await Stablincontract.mint(currentAddresses.ETH_USDC_CONTRACT_ADDR, 3);
+        let txn = await Stablincontract.mint(USDTcontract, 3);
         console.log(`[Logging] Minting Loading - ${txn.hash}`)
         await txn.wait()
         console.log(`[Logging] Minting Success - ${txn.hash}`)

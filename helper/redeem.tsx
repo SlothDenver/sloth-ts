@@ -9,8 +9,24 @@ export async function polygonRedeem(tokenId : number) {
   let etherium = (window as any).ethereum;
   const provider = new ethers.providers.Web3Provider(etherium)
 
+  let USDTcontract = ""
+  let NFTcontract = ""
+  if (etherium.networkVersion=="5001") {
+    USDTcontract = currentAddresses.MANTLE_USDC_CONTRACT_ADDR
+    NFTcontract = currentAddresses.MANTLE_NFT_CONTRACT_ADDR 
+  }
+  else if (etherium.networkVersion=="80001") {
+    USDTcontract = currentAddresses.ETH_USDC_CONTRACT_ADDR
+    NFTcontract = currentAddresses.ETH_NFT_CONTRACT_ADDR 
+  }
+  else if (etherium.networkVersion == "245022926") {
+    USDTcontract = currentAddresses.NEON_USDC_CONTRACT_ADDR
+    NFTcontract = currentAddresses.NEON_NFT_CONTRACT_ADDR 
+  }
+
+
   const Redeemsigner = provider.getSigner();
-  const Stablincontract = new ethers.Contract(currentAddresses.ETH_NFT_CONTRACT_ADDR, Polygon_NFT_ABI.abi, Redeemsigner);
+  const Stablincontract = new ethers.Contract(NFTcontract, Polygon_NFT_ABI.abi, Redeemsigner);
     
   try {
         let txn = await Stablincontract.redeem(tokenId);
@@ -25,11 +41,29 @@ export async function polygonRedeem(tokenId : number) {
 }
 
 export async function RetreiveMyToken(account : string) {
+  let etherium = (window as any).ethereum;
+  const provider = new ethers.providers.Web3Provider(etherium)
 
-  let provider = (window as any).ethereum;
-  const e = new ethers.providers.Web3Provider(provider);
-  const getOwnerSign = e.getSigner();
-  const Stablincontract = new ethers.Contract(currentAddresses.ETH_NFT_CONTRACT_ADDR, Polygon_NFT_ABI.abi, getOwnerSign);
+  let USDTcontract = ""
+  let NFTcontract = ""
+  if (etherium.networkVersion=="5001") {
+    USDTcontract = currentAddresses.MANTLE_USDC_CONTRACT_ADDR
+    NFTcontract = currentAddresses.MANTLE_NFT_CONTRACT_ADDR 
+  }
+  else if (etherium.networkVersion=="80001") {
+    USDTcontract = currentAddresses.ETH_USDC_CONTRACT_ADDR
+    NFTcontract = currentAddresses.ETH_NFT_CONTRACT_ADDR 
+  }
+  else if (etherium.networkVersion == "245022926") {
+    USDTcontract = currentAddresses.NEON_USDC_CONTRACT_ADDR
+    NFTcontract = currentAddresses.NEON_NFT_CONTRACT_ADDR 
+  }
+
+
+
+  
+  const getOwnerSign = provider.getSigner();
+  const Stablincontract = new ethers.Contract(NFTcontract, Polygon_NFT_ABI.abi, getOwnerSign);
 
   for(var i = 0 ; i<=100; i++){
       try{
