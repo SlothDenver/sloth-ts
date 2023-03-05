@@ -149,16 +149,16 @@ function ConnectButton() {
           onChange={handleSwitchChain}
           className="w-36 mx-2 text-white"
           defaultValue = {80001}
-        >
-           <Select.Option value={80001} key = {0}>
+            >
+          <Select.Option value={80001} key = {0}>
           <Image
-            src="/images/connectors/metamask-fox.svg"
+            src="/images/connectors/polygon-logo.png"
             width={24}
             priority
             height={24}
             alt="MetaMask"
           />
-          <span className="text-white">MetaMask</span>
+          <span className="text-white">Polygon</span>
           </Select.Option>
           <Select.Option value={5001} key = {1}>
           <Image
