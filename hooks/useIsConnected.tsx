@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFuel } from './useFuel';
 
 export function useIsConnected() {
+  
   const [fuel] = useFuel();
   const [isConnected, setIsConnected] = useState(false);
 
@@ -14,7 +15,6 @@ export function useIsConnected() {
         setIsConnected(false);
       }
     }
-
     if (fuel) {
       main();
     }
