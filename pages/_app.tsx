@@ -23,7 +23,6 @@ export default function App({ Component, pageProps }: AppProps) {
             sizes="180x180"
             href="/sloth-logo_180x180.png"
           />
-          
       </Head>
 
     <Web3ReactProvider getLibrary={getLibrary}>
